@@ -1,0 +1,865 @@
+---
+title: "Analyse descriptive du lien entre préférences musicales et bien-être psychologique"
+subtitle: "Analyse descriptive des données"
+author: "Amélie Pires"
+date: 2026-02-20
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    lang: fr
+    include-in-header:
+      text: |
+        \usepackage{caption}
+        \captionsetup[table]{font=small}
+execute:
+  echo: false
+  warning: false
+  message: false
+editor: visual
+---
+\newpage
+
+# Introduction
+
+## Objectif / Problématique
+Pour ce projet, j’ai choisi d’étudier le lien entre les préférences musicales et le bien-être psychologique. La musique occupe une place importante dans la vie quotidienne et peut avoir des effets différents selon les personnes car elle peut détendre, motiver, aider à se concentrer ou parfois accentuer certaines émotions.
+
+Je me suis donc demandé s'il existait une relation entre les habitudes d’écoute musicale et certains indicateurs de santé mentale comme l’anxiété, la dépression, l’insomnie ou les troubles obsessionnels compulsifs ?
+
+L’objectif est d’analyser si le genre musical préféré, le nombre d’heures d’écoute par jour ou encore le fait d’écouter de la musique en travaillant sont associés à des niveaux différents de bien-être psychologique.
+
+## Présentation de la base de données
+
+La base de données utilisée provient du site Kaggle et correspond à l’enquête Music & Mental Health Survey <https://www.kaggle.com/datasets/catherinerasgaitis/mxmh-survey-results>. Elle contient 736 observations et chaque observation correspond à un individu ayant répondu au questionnaire.
+
+Les données ont été collectées à partir d’une enquête en ligne portant sur les habitudes d’écoute musicale et différents indicateurs liés à la santé mentale. L’objectif de cette enquête était de mieux comprendre les liens possibles entre la musique et l’état émotionnel des individus.
+
+La base initiale comportait un nombre limité de valeurs manquantes (environ 2,6 % des données). Afin de conserver l’ensemble des observations, les valeurs manquantes ont été imputées à l’aide de la méthode MICE. Cette méthode permet d’estimer les valeurs manquantes en tenant compte des relations entre les variables. En revanche, la variable liée au BPM a été supprimée car elle présentait un nombre important de valeurs manquantes et de valeurs aberrantes (environ 14,5 %), ce qui ne permettait pas une exploitation fiable, de plus cela ne rajoutait pas beaucoup d'explication à notre problématique.
+
+
+## Description des variables
+
+Le jeu de données comprend plusieurs types de variables. On y trouve d’abord des variables quantitatives, comme l’âge, le nombre d’heures d’écoute par jour, ainsi que les scores d’anxiété, de dépression, d’insomnie et de TOC. Ces variables seront utilisées pour les statistiques descriptives et pour l’analyse en composantes principales.
+
+La base contient également des variables qualitatives nominales, comme la plateforme de streaming utilisée, le genre musical préféré ou encore l’effet perçu de la musique sur l’état émotionnel.
+
+Certaines variables sont binaires, par exemple le fait d’écouter de la musique en travaillant, de pratiquer un instrument, de composer, d’explorer de nouveaux artistes ou genres musicaux ou encore découter régulièrement de la musique avec des paroles dans une langue qu'il ne parle pas couramment.
+
+Enfin, les variables correspondant à la fréquence d’écoute de différents genres musicaux sont des variables ordinales, car leurs modalités suivent un ordre logique (jamais, rarement, parfois, très fréquemment).
+
+## Plan de l'analyse
+
+Dans un premier temps, je vais réaliser une analyse statistique univariée afin de décrire chaque variable individuellement à l’aide de statistiques descriptives et de graphiques correspondants.
+
+Dans un second temps, une analyse bivariée qui permettra d’étudier les relations entre les variables, notamment entre les indicateurs de santé mentale et les habitudes d’écoute musicale.
+
+Et enfin, une analyse factorielle (ACP) afin de réduire les dimensions des données quantitatives et d’identifier d’éventuels profils types au sein de l’échantillon.
+
+```{r}
+library(readr)
+dff <- read.csv("/Users/ameliepires/Desktop/Documents/FAC/M1/S1/CM analyse de données et descriptive/projet/base_n.csv",
+               sep = ",",
+               header = TRUE,
+               stringsAsFactors = FALSE,
+               na.strings = c("", "NA"))
+```
+
+\newpage
+# Analyse statistique univariée
+
+L’objectif de cette partie est de décrire individuellement chaque variable du jeu de données. Cette étape permet de mieux comprendre la structure des données avant d’étudier les relations entre les variables.
+
+## Analyse des variables quantitatives
+
+### Indicateurs de santé mentale
+
+Les variables étudiées sont les scores d’anxiété, de dépression, d’insomnie et de TOC.
+
+Les histogrammes présentés ci-dessous montrent la distribution de ces quatre indicateurs.
+
+Les scores d’anxiété et de dépression apparaissent relativement dispersés, avec des niveaux médians plus élevés que ceux de l’insomnie et des TOC. La majorité des individus se situent dans des niveaux intermédiaires, mais on observe également des valeurs plus élevées, traduisant une hétérogénéité importante des situations individuelles.
+
+Les distributions de l’insomnie et des TOC sont plus concentrées vers les valeurs faibles, mais présentent une asymétrie à droite, indiquant que certains individus déclarent des niveaux plus marqués avec des valeurs extrèmes qui tirent la moyenne vers le haut.
+
+```{r}
+#| fig-width: 10
+#| fig-height: 5
+#| fig-align: left
+#| out-width: "50%"
+
+vars_sante <- c("anxiete", "depression", "insomnie", "toc")
+
+par(mfrow = c(2,2))
+hist(dff$anxiete,    main = "Distribution de l'anxiété",    xlab = "Score", breaks = 10)
+hist(dff$depression, main = "Distribution de la dépression", xlab = "Score", breaks = 10)
+hist(dff$insomnie,   main = "Distribution de l'insomnie",   xlab = "Score", breaks = 10)
+hist(dff$toc,        main = "Distribution des TOC",         xlab = "Score", breaks = 10)
+par(mfrow = c(1,1))
+```
+
+Les statistiques descriptives détaillées (moyenne, médiane, écart-type) sont présentées en annexe (voir Annexe, Figure 5).
+
+On observe que le score moyen d’anxiété est de 5,84, avec une médiane de 6 et un écart-type de 2,79, ce qui indique une dispersion assez importante autour de la moyenne. La dépression présente une moyenne de 4,80 et une médiane de 5, avec un écart-type légèrement supérieur (3,03) ce qui montre aussi une variabilité marquée des situations de chaque individu.
+
+Les scores d’insomnie et de TOC sont en moyenne plus faibles, respectivement 3,74 et 2,64, avec des médianes de 3 et 2. Leurs écarts-types (3,09 pour l’insomnie et 2,84 pour les TOC) montrent aussi que malgré des niveaux moyens plus bas, certaines observations atteignent des valeurs élevées (10, le plus élevé). Les quatre indicateurs s’étendent sur l’ensemble de l’échelle possible (de 0 à 10), ce qui confirme une forte hétérogénéité au sein de l’échantillon.
+
+Globalement, ces résultats indiquent que l’anxiété et la dépression apparaissent plus marquées en moyenne que l’insomnie et les TOC, mais que l’ensemble des indicateurs présente une dispersion importante, justifiant l’étude de leurs relations avec les pratiques musicales dans les analyses suivantes.
+
+Il est important de préciser que ces scores sont auto-déclarés par les répondants, ils reflètent donc la perception subjective de leur état psychologique et non un avis médical diagnosticé.
+
+Ces premiers résultats montrent que l’échantillon présente une diversité importante des niveaux de santé mentale, ce qui justifie l’étude des relations avec les pratiques musicales dans la suite de l’analyse.
+
+
+### Temps d’écoute quotidien
+
+Le temps d’écoute quotidien présente une médiane de 3 heures et une moyenne de 3,57 heures (statistiques descriptives en Annexe Figure 6).
+
+L’histogramme ci-dessous met en évidence une distribution fortement asymétrique à droite. La majorité des individus écoutent de la musique entre 0 et 5 heures par jour, mais quelques valeurs extrêmes apparaissent, correspondant à des pratiques très très intensives.
+
+Cette dispersion met en évidence une différence marquée des comportements d’écoute.
+
+```{r}
+#| fig-width: 10
+#| fig-height: 5
+#| fig-align: left
+#| out-width: "50%"
+
+hist(dff$heures_ecoute_par_jour,
+     main = "Temps d'écoute quotidien",
+     xlab = "Heures par jour",
+     col = "darkblue")
+```
+
+Le boxplot (voir Annexe, Figure 3) confirme l’asymétrie à droite observée précédemment. La médiane se situe toujours autour de 3 heures par jour et l’intervalle interquartile reste assez concentré ce qui indique que la majorité des individus écoute un volume modéré de musique.
+
+Plusieurs valeurs élevées apparaissent comme atypiques comme celle qui atteint 24 heures par jour. Elles sont statistiquement extrêmes mais ne peuvent pas être considérées comme aberrantes, puisque 24 heures correspondent au maximum possible dans une journée. Elles traduisent donc des pratiques extrèmement intensives d’écoute et contribuent à tirer la moyenne vers le haut.
+
+### Âge
+
+L’âge des répondants est majoritairement concentré autour des jeunes adultes. La médiane est de 21 ans et 75 % des individus ont 28 ans ou moins(voir Annexe, Figure 4b et Figure 6).
+
+L’histogramme (voir Annexe, Figure 4a) montre une asymétrie à droite, traduisant la présence d’individus plus âgés même si plus rare dans l'échantillon.
+
+Cette structure indique que l’échantillon est principalement composé de jeunes adultes, ce qui devra être pris en compte dans l’interprétation des résultats.
+
+## Analyse des variables qualitatives
+
+### Genre musical préféré
+
+Le barplot ci-dessous présente la répartition des genres de musique préférés des individus.
+
+Les préférences apparaissent très diversifiées. Le rock domine (25,5 %), suivi de la pop (15,5 %) et du metal (12 %). Les autres genres représentent des parts plus faibles mais non négligeables.
+
+Cette hétérogénéité des préférences musicales suggère l’existence de profils variés qu'on pourrait associer différemment aux indicateurs de santé mentale.
+
+
+```{r}
+#| fig-width: 10
+#| fig-height: 5
+#| fig-align: left
+#| out-width: "50%"
+
+tab_genre <- sort(table(dff$genre_prefere), decreasing = TRUE)
+
+barplot(tab_genre, las = 2,
+        main = "Répartition des genres musicaux préférés",
+        ylab = "Effectifs")
+```
+
+
+### Effet perçu de la musique
+
+La majorité des individus (74,5 %) déclarent que la musique améliore leur état émotionnel. Une part plus faible estime qu’elle n’a pas d’effet particulier et une très faible part considère qu’elle peut aggraver leur état (voir Annexe, Figure 2).
+
+Ce résultat souligne le rôle central de la musique dans la régulation des émotions au sein de notre échantillon, en partie positif.
+
+
+### Écoute en travaillant
+
+78,9 % des individus déclarent écouter de la musique en travaillant (voir Annexe, Figure 1). Cette proportion élevée indique que l’écoute musicale n'est pas uniquement une activité de loisir, mais elle énormément dans les routines, le quotidien et notamment dans des contextes de travail ou d’étude.
+
+Ce résultat suggère que la musique est fréquemment mobilisée comme outil d’accompagnement des tâches, possiblement dans une logique de concentration, de motivation ou de régulation émotionnelle. Elle apparaît ainsi comme une pratique intégrée à la vie active des individus, et non comme un usage strictement récréatif ou occasionnel. C'est sûrement pour cela que certains individus déclarent écouter de la musique de manière excessive.
+
+## Synthèse de l’analyse univariée
+
+L’analyse univariée met en évidence une forte diversité des pratiques musicales ainsi qu’une hétérogénéité marquée des indicateurs de santé mentale.
+
+Les niveaux d’anxiété et de dépression apparaissent globalement plus élevés que ceux de l’insomnie et des TOC avec une dispersion importante des situations des individus.
+
+Le temps d’écoute quotidien est en moyenne modéré, mais certaines pratiques intensives traduisent des comportements différents.
+
+Les préférences musicales sont très variées, avec une domination du rock, de la pop et du métal. De plus la musique est majoritairement perçue comme un facteur d’amélioration du bien-être.
+
+Ces résultats constituent une base descriptive essentielle pour l’analyse bivariée qui permettra d’étudier plus en détail les liens entre pratiques musicales et santé mentale.
+
+# Analyse statistique bivariée
+
+L’analyse bivariée permet d’étudier les relations entre deux variables afin d’identifier d’éventuelles "associations" entre pratiques musicales et indicateurs de santé mentale. Contrairement à l’analyse univariée, il ne s’agit plus de décrire les variables séparément mais d’examiner leur interaction.
+
+## Choix des relations étudiées
+
+Les relations étudiées que j'ai sélectionné sont en lien avec la problématique « musique et bien-être psychologique ». Trois "types d’associations" sont étudiés : les relations de variables quantitative–quantitative, les relations qualitative–qualitative et les relations quantitative–qualitative.
+
+
+## Analyse quantitative vs quantitative
+
+### Temps d’écoute quotidien et anxiété
+
+On étudie maintenant la relation entre le temps d’écoute quotidien (transformé en logarithme) et le score d’anxiété. Même si les distributions initiales présentaient une certaine asymétrie, la transformation logarithmique a permis d’atténuer l’influence des valeurs extrêmes. Les corrélations sont donc présentées à l’aide du coefficient de Pearson afin de mesurer l’intensité de la relation linéaire.
+
+Les résultats détaillés du test sont présentés en annexe (voir Annexe, Figure 8). La corrélation entre log_heures et l’anxiété est positive mais faible (r = 0,0943, p = 0,0105) et elle est statistiquement significative. Cela signifie qu’une augmentation du temps d’écoute est associée à une légère hausse du score d’anxiété mais que l’intensité de cette relation reste très limitée.
+
+Le nuage de points confirme cette interprétation (voir Annexe, Figure 9a). Les observations sont largement dispersées et ne dessinent pas de tendance linéaire marquée. La variabilité des scores d’anxiété reste importante pour des niveaux similaires d’écoute ce qui suggère que le temps d’écoute n’est pas un facteur fortement structurant du niveau d’anxiété.
+
+Alors même si une association statistique est détectée, son pouvoir explicatif reste faible.
+
+
+### Corrélations globales entre variables quantitatives
+
+Afin d’avoir une vision d’ensemble j'ai calculé la matrice de corrélation entre les principales variables quantitatives.
+
+```{r}
+#| fig-width: 5
+#| fig-height: 4
+#| fig-align: left
+#| out-width: "40%"
+
+library(corrplot)
+
+num_vars <- dff[, c("heures_ecoute_par_jour",
+                    "age",
+                    "anxiete",
+                    "depression",
+                    "insomnie",
+                    "toc")]
+
+mat_spear <- cor(num_vars,
+                 method = "spearman",
+                 use = "complete.obs")
+
+corrplot(mat_spear,
+         method = "number",
+         type = "upper",
+         order = "hclust",
+         tl.col = "black",
+         tl.cex = 0.6,    
+         number.cex = 0.5, 
+         cl.cex = 0.6,
+         mar = c(0,0,1,0))  
+
+title("Corrélations (Spearman)", line = 1, cex.main = 0.8)
+```
+
+On observe des corrélations positives modérées entre les indicateurs de santé mentale (notamment anxiété et dépression ou insomnie et dépression). En revanche, les corrélations entre le temps d’écoute et les scores psychologiques restent faibles. Cela suggère que l’intensité d’écoute ne constitue pas un facteur fortement associé aux niveaux des troubles.
+
+## Analyse qualitative vs qualitative
+
+### Écoute en travaillant et effet perçu de la musique
+
+On analyse ici si le fait d’écouter de la musique en travaillant est associé à une perception différente de son effet.
+
+```{r}
+#| fig-width: 10
+#| fig-height: 5
+#| fig-align: left
+#| out-width: "50%"
+
+tab_travail_effet <- table(dff$ecoute_en_travaillant, dff$effet_musique)
+
+barplot(tab_travail_effet,
+        beside = FALSE,
+        legend = TRUE,
+        col = c("indianred2","darkseagreen3"),
+        main = "Effet perçu de la musique selon l'écoute en travaillant",
+        ylab = "Effectifs")
+```
+
+Le graphique montre que les individus écoutant de la musique en travaillant déclarent plus fréquemment un effet positif. À l’inverse, ceux ne le faisant pas déclarent plus souvent un effet neutre. 
+
+Le test du χ² correspondant est présenté en annexe (voir Annexe, Figure 7). La relation entre l’écoute de musique en travaillant et l’effet perçu de la musique est statistiquement significative (χ² = 21,64, ddl = 2 et p < 0,001).
+
+Cela signifie que la perception de l’effet de la musique diffère selon que l’individu écoute ou non de la musique en travaillant. L’usage de la musique dans un contexte de travail semble donc associé à une expérience émotionnelle spécifique. Ça suggère que la musique est utilisée de manière fonctionnelle dans les activités quotidiennes.
+
+### Genre musical préféré et effet perçu de la musique
+
+On étudie également la relation entre le genre musical préféré et l’effet perçu de la musique. Les tableaux de contingence et les résultats du test du χ² sont présentés en annexe (voir Annexe, Figure 7).
+
+Le test du χ² n’est pas statistiquement significatif (p = 0,196) ce qui signifie que l’on ne peut pas conclure à une association entre le genre musical préféré et l’effet perçu de la musique. Autrement dit, la perception de la musique comme bénéfique, neutre ou négative ne dépend pas trop du genre déclaré comme favori.
+
+Globalement la musique est majoritairement perçue comme améliorant le bien-être, quel que soit le genre préféré. Les différences observées entre genres restent limitées et doivent être interprétées avec prudence, en particulier pour les genres faiblement représentés dans l’échantillon, dont les effectifs réduits peuvent limiter la puissance statistique du test.
+
+## Analyse quantitative vs qualitative
+
+### Anxiété selon l’effet perçu de la musique
+
+On compare ici les scores d’anxiété selon la perception de l’effet de la musique.
+
+```{r}
+#| fig-width: 10
+#| fig-height: 5
+#| fig-align: left
+#| out-width: "50%"
+
+boxplot(anxiete ~ effet_musique,
+        data = dff,
+        main = "Anxiété selon l'effet perçu de la musique",
+        xlab = "Effet perçu de la musique",
+        ylab = "Score d'anxiété",
+        col = c("indianred2","darkseagreen3","lightgrey"))
+```
+
+On observe des différences de dispersion selon les groupes. Les individus déclarant que la musique améliore leur état présentent parfois des niveaux d’anxiété élevés, ce qui peut suggérer que la musique est utilisée comme stratégie de gestion émotionnelle.
+
+### Temps d’écoute selon l’écoute en travaillant
+
+On analyse si le temps d’écoute quotidien diffère selon que l’individu écoute de la musique en travaillant. Les résultats reposent sur une comparaison de moyennes (test t de Student) ainsi que sur des boxplots illustrant la distribution du temps d’écoute dans les deux groupes (voir Annexe, Figure 10b et Figure 11).
+
+Les boxplots montrent visuellement que la médiane du temps d’écoute est plus élevée chez les individus déclarant écouter de la musique en travaillant. La dispersion apparaît également légèrement plus importante dans ce groupe avec davantage de valeurs élevées.
+
+Le test t confirme que cette différence est statistiquement significative. Les individus qui écoutent de la musique en travaillant déclarent en moyenne un temps d’écoute quotidien plus important que ceux qui ne le font pas. Ça suggère que l’écoute en contexte de travail s’inscrit dans une pratique plus intensive et régulière de la musique plutôt que dans un usage ponctuel.
+
+## Synthèse de l’analyse bivariée
+
+L’analyse bivariée met en évidence certaines associations entre pratiques musicales et indicateurs de santé mentale. Les troubles psychologiques sont corrélés entre eux de manière modérée, tandis que le lien entre intensité d’écoute et santé mentale reste faible. L’écoute en travaillant apparaît associée à une perception plus positive de la musique ainsi qu’à une intensité d’écoute plus élevée. Toutefois, ces résultats décrivent des associations et ne permettent pas d’établir de relation causale.
+
+\newpage
+# Analyse multivariée
+
+L’analyse multivariée vise à comprendre comment s’organisent simultanément les différentes dimensions étudiées au-delà des relations bivariées. Alors que les analyses précédentes ont permis d’identifier des corrélations entre variables prises deux à deux, elles ne permettent pas d’appréhender la structure globale du système. L’objectif ici est donc d’examiner si les indicateurs de santé mentale et les pratiques d’écoute musicale s’inscrivent dans une même dimension ou s’ils relèvent de logiques distinctes. Pour répondre à cette question j'ai effectué une Analyse en Composantes Principales (ACP). Cette méthode permet de résumer l’information contenue dans plusieurs variables quantitatives corrélées en un nombre réduit d’axes factoriels, tout en conservant une part importante de la variance initiale. Elle offre ainsi une lecture synthétique de la structure des données et permet d’identifier les dimensions dominantes qui organisent l’espace des individus.
+
+## Analyse en composantes principales (ACP)
+
+L’ACP constitue une méthode exploratoire de réduction de dimension particulièrement adaptée lorsque l’on cherche à mettre en évidence des facteurs latents communs à plusieurs variables quantitatives. Dans cette étude, elle permet d’examiner si un facteur global de santé mentale émerge des différents indicateurs psychologiques et de déterminer comment l’intensité d’écoute musicale se positionne par rapport à cette structure. L’analyse repose sur des variables centrées et réduites afin d’assurer leur comparabilité, les scores étant exprimés sur des échelles identiques mais présentant des dispersions différentes. L’ACP fournit ainsi une représentation factorielle des variables et des individus, permettant une interprétation simultanée des relations entre dimensions psychologiques et comportements musicaux.
+
+
+### Choix des variables
+
+L’ACP principale repose sur 5 variables : le temps d’écoute quotidien transformé en logarithme (log_heures) et les scores d’anxiété, de dépression, d’insomnie et de TOC. La transformation logarithmique du temps d’écoute vise à corriger l’asymétrie observée dans la distribution et à limiter l’influence des valeurs extrêmes. Les variables ont été centrées et réduites afin d’assurer leur comparabilité dans la construction des axes factoriels.
+
+Les vérifications préalables sont présentées en annexe. Les tests de normalité de Shapiro-Wilk figurant dans la Figure 13a montrent que toutes les p-values sont nulles, ce qui conduit à rejeter l’hypothèse de normalité pour l’ensemble des variables quantitatives. Le déterminant de la matrice de corrélation de Spearman, présenté en Figure 13b, est égal à 0,496, indiquant l’absence de colinéarité problématique et confirmant que les variables apportent une information complémentaire. Ces éléments justifient la mise en œuvre de l’ACP.
+
+L’âge est introduit dans un second temps comme variable quantitative supplémentaire, comme le montre la Figure 16, afin d’évaluer son positionnement dans l’espace factoriel sans influencer la construction des axes principaux.
+
+```{r}
+#Préparation des variables
+library(FactoMineR)
+library(factoextra)
+library(dplyr)
+
+dff$log_heures <- log1p(dff$heures_ecoute_par_jour)
+
+df_acp_main <- dff[, c("log_heures","anxiete","depression","insomnie","toc")]
+ACP1 <- PCA(df_acp_main, scale.unit = TRUE, graph = FALSE)
+```
+
+### Résultats factoriels
+
+Le choix du nombre de dimensions repose sur l’examen du graphique des valeurs propres. Le scree plot indique que la première dimension explique 41,1 % de la variance totale et la deuxième 19,4 %, tandis que les troisième et quatrième dimensions expliquent respectivement 16,7 % et 14,2 %. Les quatre premières dimensions concentrent ainsi plus de 90 % de l’inertie totale, ce qui traduit une structuration claire des données.
+
+```{r}
+#| fig-width: 5
+#| fig-height: 4
+#| fig-align: center
+#| out-width: "40%"
+
+fviz_eig(ACP1, addlabels = TRUE, ylim = c(0, 80))
+```
+
+Le cercle des corrélations sur les deux premiers axes met en évidence une organisation particulièrement lisible. Les variables d’anxiété, de dépression, d’insomnie et de TOC sont fortement corrélées entre elles et projetées dans la même direction sur la première dimension. À l’inverse, la variable log_heures est principalement associée à la deuxième dimension. Les contributions exactes des variables sont détaillées dans la Figure 17a, tandis que la qualité de représentation (cos²) est présentée dans la Figure 17b. Ces tableaux confirment que la première dimension est essentiellement construite par les quatre indicateurs de santé mentale, qui cumulent l’essentiel des contributions, alors que la deuxième dimension est dominée par l’intensité d’écoute musicale.
+
+```{r}
+#| fig-width: 5
+#| fig-height: 4
+#| fig-align: center
+#| out-width: "40%"
+
+fviz_pca_var(ACP1, axes = c(1,2),
+             col.var = "contrib",
+             repel = TRUE,
+             title = "Cercle des corrélations (Dim 1–2)")
+```
+
+Le cercle des corrélations sur les dimensions trois et quatre, présenté en Figure 14, montre que la troisième dimension est principalement structurée par les TOC, tandis que la quatrième est dominée par l’insomnie. Ces axes affinent l’analyse sans remettre en cause l’interprétation principale.
+
+Pour appuyer l’interprétation graphique issue du cercle des corrélations, un tableau synthétique des contributions et des cos² des variables sur les deux premières dimensions a été construit à partir des sorties de l’ACP. Ce tableau présente, pour chaque axe, les variables les plus contributives ainsi que leur qualité de représentation.
+
+```{r}
+library(kableExtra)
+
+var_contrib <- as.data.frame(get_pca_var(ACP1)$contrib)
+var_cos2    <- as.data.frame(get_pca_var(ACP1)$cos2)
+
+top_var_axis <- function(axis = 1, k = 5){
+  ax <- paste0("Dim.", axis)
+  tibble(
+    variable = rownames(var_contrib),
+    contrib  = var_contrib[[ax]],
+    cos2     = var_cos2[[ax]]
+  ) %>% arrange(desc(contrib)) %>% head(k)
+}
+
+tab_dim1 <- top_var_axis(1, 5)
+tab_dim2 <- top_var_axis(2, 5)
+
+tab_axes <- rbind(
+  cbind(Axe = "Dim 1", tab_dim1),
+  cbind(Axe = "Dim 2", tab_dim2)
+)
+
+knitr::kable(tab_axes, digits = 2,
+             align = "lccc") %>%
+  kable_styling(font_size = 8,
+                latex_options = "scale_down",
+                position = "left")
+```
+L’analyse des contributions permet d’identifier quelles variables « construisent » réellement l’axe. Sur la première dimension, les contributions les plus élevées sont celles de l’anxiété (29 %), de la dépression (28 %), de l’insomnie (21 %) et des TOC (16 %), tandis que la contribution de log_heures reste moindre (5 %). Cela signifie que la première dimension est très majoritairement structurée par les indicateurs de santé mentale, qui concentrent à eux seuls l’essentiel de l’inertie de l’axe. Cette lecture confirme visuellement ce que suggérait déjà le cercle des corrélations, la Dimension 1 correspond à un facteur commun de troubles psychiques.
+
+L’examen des cos² complète cette interprétation. Les valeurs élevées de cos² pour l’anxiété et la dépression sur Dim 1 (environ 0,60) indiquent que ces variables sont très bien représentées sur cet axe, c’est-à-dire qu’une part importante de leur variance est expliquée par cette dimension. L’insomnie et les TOC présentent également des cos² importants, confirmant leur forte association à cette dimension. À l’inverse, log_heures présente un cos² faible sur Dim 1 (0,10), ce qui signifie qu’elle est peu expliquée par cet axe.
+
+Sur la deuxième dimension, la situation est inversée. La variable log_heures concentre près de 87 % des contributions, ce qui montre qu’elle est quasiment la seule à structurer cet axe. Son cos² élevé sur Dim 2 (0,84) indique qu’elle est très bien représentée sur cette dimension. Les indicateurs de santé mentale, en revanche, y présentent des contributions et des cos² faibles, ce qui confirme que cette dimension correspond essentiellement à une variation d’intensité d’écoute musicale, relativement indépendante du niveau global de troubles psychiques.
+
+Ainsi, l’examen des contributions et des cos² renforce l’interprétation factorielle. La première dimension résume un facteur solide de santé mentale globale, tandis que la seconde correspond à une dimension spécifique d’intensité d’écoute musicale. Cette lecture confirme la séparation structurelle entre troubles psychiques et pratiques d’écoute observée dans les représentations graphiques.
+
+### Interprétation des axes
+
+La première dimension apparaît clairement comme un axe de santé mentale globale. Les contributions élevées de l’anxiété, de la dépression, de l’insomnie et des TOC, ainsi que leurs cos² importants sur cette dimension, indiquent qu’elle capte un facteur latent commun de vulnérabilité psychique. Les individus situés à l’extrémité positive de cet axe présentent des scores élevés sur l’ensemble des indicateurs, tandis que ceux situés à l’extrémité opposée présentent des scores faibles. Les profils extrêmes sont détaillés dans les Figures 18a et 18b, qui présentent respectivement les cinq individus les plus élevés et les cinq individus les plus faibles sur la première dimension. Ces résultats confirment que la structuration principale de l’espace factoriel repose sur l’intensité des troubles psychiques.
+
+La deuxième dimension correspond à une logique distincte, principalement associée à l’intensité d’écoute musicale. La contribution très élevée de log_heures sur cette dimension et sa forte qualité de représentation indiquent qu’elle structure un axe spécifique, relativement indépendant de la santé mentale. Cela signifie que l’intensité d’écoute varie au sein de l’échantillon sans être directement confondue avec le niveau global de troubles.
+
+La projection des individus sur les deux premiers axes, présentée en Figure 15a, montre une organisation continue, sans formation de groupes distincts. L’habillage selon l’écoute en travaillant (Figure 15b) ou selon l’effet perçu de la musique (Figure 15c) ne fait pas apparaître de séparation nette, les ellipses se chevauchant largement. Ces résultats suggèrent que ces variables qualitatives ne structurent pas fortement l’espace factoriel.
+
+La projection de l’âge en variable supplémentaire, illustrée en Figure 16, montre que cette variable ne présente pas de corrélation marquée avec les deux premières dimensions. Elle n’explique donc pas la structuration principale observée.
+
+Afin de tester plus directement l’existence d’une dimension commune entre musique et santé mentale, une ACP a été réalisée sur le temps d’écoute et un score moyen de santé mentale. Le cercle des corrélations correspondant est présenté en Figure 19a. La première dimension explique 58,8 % de la variance totale et les deux variables sont orientées globalement dans la même direction, traduisant une corrélation positive faible à modérée. La projection des individus en Figure 19b montre une structure diagonale classique, sans opposition nette ni segmentation en groupes distincts. Cette analyse complémentaire confirme que la relation entre intensité d’écoute et santé mentale demeure modérée et ne constitue pas la dimension dominante du système.
+
+Dans l’ensemble, l’ACP met en évidence une structure claire et stable. La dimension principale est celle de la santé mentale globale, tandis que l’intensité d’écoute musicale constitue une dimension secondaire relativement indépendante. Ces résultats prolongent et confirment ceux de l’analyse bivariée, la musique n’apparaît pas comme un facteur explicatif central des troubles psychiques, mais s’inscrit dans un système plus complexe où la variabilité des troubles constitue l’élément structurant majeur de l’espace des individus.
+
+\newpage
+# Conclusion
+
+## Principaux résultats
+
+L’objectif de ce travail était d’examiner l’existence éventuelle d’un lien entre les pratiques d’écoute musicale et différents indicateurs de santé mentale, à savoir l’anxiété, la dépression, l’insomnie et les troubles obsessionnels compulsifs. À partir des données issues de l’enquête Music & Mental Health Survey, l’analyse a combiné une approche descriptive, bivariée et multivariée afin d’explorer de manière progressive la structure des relations observées.
+
+L’analyse univariée a d’abord mis en évidence une forte hétérogénéité des situations individuelles. Les indicateurs de santé mentale présentent des niveaux moyens modérés, mais avec une dispersion importante, ce qui traduit une diversité marquée des profils psychologiques au sein de l’échantillon. Les distributions montrent notamment que l’anxiété et la dépression apparaissent globalement plus élevées que les scores d’insomnie et de TOC, bien que toutes les variables présentent une variabilité significative. Le temps d’écoute quotidien est en moyenne modéré, mais sa distribution est asymétrique, révélant l’existence de pratiques très intensives chez certains individus. Enfin, la musique est majoritairement perçue comme ayant un effet positif sur l’état émotionnel, et une large majorité des répondants déclarent écouter de la musique en travaillant.
+
+L’analyse bivariée a ensuite permis d’identifier plusieurs résultats structurants. Les indicateurs de santé mentale sont modérément corrélés entre eux, ce qui suggère l’existence d’une co-occurrence partielle des troubles. En revanche, les corrélations entre le temps d’écoute et les scores psychologiques sont faibles. Bien qu’elles soient parfois statistiquement significatives, leur intensité demeure limitée. Cela signifie qu’une augmentation du temps d’écoute est associée à une variation des scores psychologiques, mais dans des proportions faibles. Par ailleurs, certaines associations apparaissent au niveau qualitatif : écouter de la musique en travaillant est lié à une perception plus positive de son effet, et à un temps d’écoute plus élevé. Toutefois, ces résultats décrivent des associations et ne permettent en aucun cas d’établir un lien causal.
+
+L’analyse multivariée, à travers l’Analyse en Composantes Principales, constitue le cœur de l’interprétation globale. Elle met en évidence une structure particulièrement claire. La première dimension factorielle est largement dominée par les indicateurs de santé mentale, qui contribuent massivement à sa construction et y sont très bien représentés. Cette dimension peut être interprétée comme un facteur latent de vulnérabilité psychique globale. Les individus se répartissent principalement selon l’intensité cumulée de leurs troubles, sans segmentation nette en groupes distincts.
+
+La deuxième dimension est, quant à elle, essentiellement structurée par l’intensité d’écoute musicale. Cette dimension apparaît relativement indépendante du facteur global de santé mentale. L’intensité d’écoute varie au sein de l’échantillon, mais elle ne constitue pas la dimension centrale organisant l’espace des individus. Les axes suivants affinent l’analyse en isolant des spécificités liées notamment aux TOC et aux troubles du sommeil, sans remettre en cause la structure principale.
+
+L’ACP réalisée sur le score global de santé mentale et le temps d’écoute confirme cette lecture. Une relation positive faible à modérée est observée, mais elle ne constitue pas une opposition structurante forte. L’intensité d’écoute ne semble donc ni clairement associée à une amélioration ni à une dégradation marquée de la santé mentale.
+
+Ainsi, le résultat principal de cette étude est le suivant : la structure dominante des données est celle de la santé mentale elle-même. Les pratiques musicales, bien que présentes et variées, apparaissent comme une dimension secondaire et relativement indépendante. La musique ne constitue pas un facteur explicatif central des troubles psychiques dans cet échantillon. Elle s’inscrit plutôt dans un système plus complexe où les variations individuelles de santé mentale constituent la composante structurante majeure.
+
+## Limites de l’analyse
+
+Plusieurs limites doivent néanmoins être soulignées afin d’interpréter ces résultats avec prudence.
+
+La première limite concerne la nature des données. L’enquête repose sur des déclarations auto-reportées, ce qui peut introduire des biais de perception ou de désirabilité sociale. Les scores d’anxiété, de dépression, d’insomnie et de TOC ne correspondent pas à des diagnostics cliniques, mais à des évaluations subjectives. Il est donc possible que certains individus sous-estiment ou surestiment leurs symptômes.
+
+La deuxième limite tient à la structure de l’échantillon. Celui-ci est majoritairement composé de jeunes adultes, ce qui restreint la représentativité des résultats. Les comportements d’écoute musicale et les dynamiques psychologiques peuvent différer selon les générations. Les conclusions ne peuvent donc pas être généralisées à l’ensemble de la population.
+
+Une autre limite importante réside dans la nature transversale des données. L’analyse repose sur une photographie à un instant donné. Il est impossible de déterminer la direction des relations observées. Une corrélation positive faible entre intensité d’écoute et troubles psychiques peut s’interpréter de plusieurs manières : la musique pourrait influencer l’état émotionnel, mais il est tout aussi plausible que les individus présentant un niveau plus élevé de troubles aient recours plus fréquemment à la musique comme stratégie de régulation émotionnelle. L’ACP et les analyses de corrélation ne permettent pas de trancher cette question.
+
+Par ailleurs, bien que la méthode MICE ait été utilisée pour imputer les valeurs manquantes, toute procédure d’imputation repose sur des hypothèses. Même si la proportion de données manquantes était faible, une incertitude demeure quant à l’impact potentiel de cette étape sur certains résultats.
+
+Enfin, l’ACP est une méthode exploratoire. Elle permet de résumer l’information et d’identifier des dimensions latentes, mais elle ne constitue pas un modèle explicatif causal. Les axes factoriels reflètent des structures statistiques, qui ne doivent pas être interprétées comme des mécanismes psychologiques établis.
+
+## Perspectives
+
+Malgré ces limites, cette étude ouvre plusieurs pistes de réflexion et de recherche.
+
+Une première perspective consisterait à approfondir l’analyse à l’aide de modèles explicatifs, tels que des régressions multivariées intégrant simultanément plusieurs variables de contrôle. Cela permettrait d’évaluer plus finement le rôle spécifique de l’intensité d’écoute en tenant compte de facteurs comme l’âge, le genre musical préféré ou l’écoute en travaillant.
+
+Une deuxième piste serait d’examiner plus précisément la dimension qualitative de l’expérience musicale. L’intensité d’écoute ne reflète pas nécessairement la nature de l’interaction avec la musique. Il pourrait être pertinent d’intégrer des variables mesurant les motivations d’écoute, les contextes d’usage ou les états émotionnels associés à différents genres musicaux.
+
+Une autre perspective intéressante serait de mobiliser des données longitudinales. Une enquête répétée dans le temps permettrait d’analyser les dynamiques évolutives et d’explorer plus rigoureusement la question de la causalité. On pourrait alors examiner si une modification des habitudes d’écoute est associée à une évolution des indicateurs de santé mentale.
+
+Enfin, une approche complémentaire pourrait consister à mobiliser des méthodes issues de la psychologie ou des neurosciences afin d’étudier plus finement les mécanismes de régulation émotionnelle liés à la musique. La musique peut jouer un rôle complexe, à la fois comme outil de détente, de motivation ou d’intensification émotionnelle. L’absence de relation forte dans cette étude ne signifie pas l’absence d’effet, mais suggère plutôt que cet effet dépend probablement de facteurs individuels plus subtils.
+
+En définitive, ce travail montre que la musique occupe une place importante dans la vie quotidienne des individus, mais qu’elle ne constitue pas un déterminant majeur de la structure globale des troubles psychiques observés dans cet échantillon. La santé mentale apparaît comme une dimension autonome et structurante, tandis que les pratiques musicales s’inscrivent dans un ensemble plus nuancé de comportements et de stratégies personnelles. Ces résultats invitent à poursuivre l’exploration du lien entre musique et bien-être psychologique en mobilisant des approches méthodologiques complémentaires et des cadres théoriques plus larges.
+
+\newpage
+
+# Annexes
+```{r}
+#| fig-width: 10
+#| fig-height: 5
+#| fig-align: center
+#| out-width: "85%"
+
+# ANNEXE — ANALYSE UNIVARIÉE
+
+par(cex = 0.6)
+
+# Figures 1 & 2 
+par(mfrow = c(1,2), mar = c(4,4,3,1))
+
+# Figure 1 — Écoute de musique en travaillant (en %)
+tab_work <- prop.table(table(dff$ecoute_en_travaillant)) * 100
+
+barplot(tab_work,
+        col = c("red", "forestgreen"),
+        main = "Figure 1 — Écoute en travaillant",
+        ylab = "Pourcentage (%)",
+        ylim = c(0, 100))
+
+text(x = seq_along(tab_work),
+     y = tab_work,
+     labels = paste0(round(tab_work, 1), "%"),
+     pos = 3, cex = 0.7)
+
+# Figure 2 — Effet perçu de la musique
+tab_effet <- sort(table(dff$effet_musique), decreasing = TRUE)
+
+barplot(tab_effet,
+        col = c("darkseagreen3","grey","indianred2"),
+        main = "Figure 2 — Effet perçu",
+        ylab = "Effectifs")
+
+# Figures 3, 4a, 4b 
+
+par(mfrow = c(1,3), mar = c(4,4,3,1))
+
+# Figure 3 — Temps d'écoute (boxplot)
+boxplot(dff$heures_ecoute_par_jour,
+        main = "Figure 3 — Temps d'écoute (boxplot)",
+        ylab = "Heures/jour")
+
+# Figure 4a — Âge (histogramme)
+hist(dff$age,
+     main = "Figure 4a — Âge (hist.)",
+     xlab = "Âge",
+     col = "orange",
+     breaks = 12)
+
+# Figure 4b — Âge (boxplot)
+boxplot(dff$age,
+        main = "Figure 4b — Âge (boxplot)",
+        ylab = "Âge")
+
+par(mfrow = c(1,1), mar = c(4,4,2,1))
+
+# Figure 5 — Statistiques descriptives : santé mentale
+
+vars_sante <- c("anxiete", "depression", "insomnie", "toc")
+
+tab_sante <- data.frame(
+  Variable = vars_sante,
+  Moyenne = sapply(dff[vars_sante], mean),
+  Mediane = sapply(dff[vars_sante], median),
+  Ecart_type = sapply(dff[vars_sante], sd),
+  Min = sapply(dff[vars_sante], min),
+  Max = sapply(dff[vars_sante], max)
+)
+
+knitr::kable(tab_sante, digits = 2,
+             caption = "Figure 5 — Statistiques descriptives des indicateurs de santé mentale")
+
+# Figure 6 — Statistiques descriptives : intensité d’écoute et âge
+
+tab_intensite <- data.frame(
+  Variable = c("heures_ecoute_par_jour", "age"),
+  Moyenne = c(mean(dff$heures_ecoute_par_jour), mean(dff$age)),
+  Mediane = c(median(dff$heures_ecoute_par_jour), median(dff$age)),
+  Ecart_type = c(sd(dff$heures_ecoute_par_jour), sd(dff$age)),
+  Min = c(min(dff$heures_ecoute_par_jour), min(dff$age)),
+  Max = c(max(dff$heures_ecoute_par_jour), max(dff$age))
+)
+
+knitr::kable(tab_intensite, digits = 2,
+             caption = "Figure 6 — Statistiques descriptives : temps d'écoute quotidien et âge")
+```
+
+```{r}
+#| fig-width: 10
+#| fig-height: 5
+#| fig-align: center
+#| out-width: "85%"
+
+# ANNEXE — ANALYSE BIVARIÉE
+
+par(cex = 0.6)
+
+# Figure 7 — Tests χ² (quali–quali) : tableau résumé
+
+tab_genre_effet   <- table(dff$genre_prefere, dff$effet_musique)
+tab_travail_effet <- table(dff$ecoute_en_travaillant, dff$effet_musique)
+tab_stream_genre  <- table(dff$plateforme_streaming, dff$genre_prefere)
+
+chi1 <- chisq.test(tab_genre_effet)
+chi2 <- chisq.test(tab_travail_effet)
+chi3 <- chisq.test(tab_stream_genre)
+
+res_chi <- data.frame(
+  Test = c("Genre préféré × Effet perçu",
+           "Écoute en travaillant × Effet perçu",
+           "Plateforme × Genre préféré"),
+  Statistique = c(chi1$statistic, chi2$statistic, chi3$statistic),
+  ddl = c(chi1$parameter, chi2$parameter, chi3$parameter),
+  p_value = c(chi1$p.value, chi2$p.value, chi3$p.value)
+)
+
+knitr::kable(res_chi, digits = 4,
+             caption = "Figure 7 — Tests du χ² (quali–quali)")
+
+
+# Figure 8 — Corrélations (spearman) entre log_heures et santé mentale
+
+ct_anx <- cor.test(dff$log_heures, dff$anxiete,    method="spearman")
+ct_dep <- cor.test(dff$log_heures, dff$depression, method="spearman")
+ct_ins <- cor.test(dff$log_heures, dff$insomnie,   method="spearman")
+ct_toc <- cor.test(dff$log_heures, dff$toc,        method="spearman")
+
+res_cor <- data.frame(
+  Variable = c("Anxiété", "Dépression", "Insomnie", "TOC"),
+  r = c(ct_anx$estimate, ct_dep$estimate, ct_ins$estimate, ct_toc$estimate),
+  p_value = c(ct_anx$p.value, ct_dep$p.value, ct_ins$p.value, ct_toc$p.value)
+)
+
+knitr::kable(res_cor, digits = 4,
+             caption = "Figure 8 — Corrélations de Pearson entre log(heures) et santé mentale")
+
+
+# Figure 9 — Nuages de points (quanti–quanti)
+
+par(mfrow = c(1,3), mar = c(4,4,3,1))
+
+plot(dff$heures_ecoute_par_jour, dff$anxiete,
+     pch = 19, col = rgb(0.2, 0.4, 0.6, 0.4),
+     xlab = "Temps d'écoute (h)", ylab = "Anxiété",
+     main = "Figure 9a — Écoute vs\nanxiété")
+
+plot(dff$anxiete, dff$depression,
+     pch = 19, col = rgb(0.6, 0.2, 0.2, 0.4),
+     xlab = "Anxiété", ylab = "Dépression",
+     main = "Figure 9b — Anxiété\nvs dépression")
+
+plot(dff$insomnie, dff$depression,
+     pch = 19, col = rgb(0.3, 0.3, 0.3, 0.4),
+     xlab = "Insomnie", ylab = "Dépression",
+     main = "Figure 9c — Insomnie\nvs dépression")
+
+par(mfrow = c(1,1))
+
+
+# Figure 10 — Quali–quanti : boxplots + tests t (tableau résumé)
+
+par(mfrow = c(1,2), mar = c(4,4,3,1))
+
+boxplot(depression ~ genre_prefere,
+        data = dff, las = 2,
+        main = "Figure 10a — Dépression\nselon genre préféré",
+        xlab = "Genre préféré", ylab = "Score de dépression",
+        col = "lightgrey")
+
+boxplot(heures_ecoute_par_jour ~ ecoute_en_travaillant,
+        data = dff,
+        main = "Figure 10b — Temps d'écoute\nselon écoute en travaillant",
+        xlab = "Écoute en travaillant", ylab = "Heures/jour",
+        col = "lightgrey")
+
+par(mfrow = c(1,1))
+
+# tests t résumés
+tt1 <- t.test(heures_ecoute_par_jour ~ ecoute_en_travaillant, data = dff)
+tt2 <- t.test(anxiete ~ ecoute_en_travaillant, data = dff)
+
+res_t <- data.frame(
+  Test = c("Temps d'écoute ~ Écoute en travaillant",
+           "Anxiété ~ Écoute en travaillant"),
+  t = c(tt1$statistic, tt2$statistic),
+  ddl = c(tt1$parameter, tt2$parameter),
+  p_value = c(tt1$p.value, tt2$p.value),
+  Moyenne_Oui = c(mean(dff$heures_ecoute_par_jour[dff$ecoute_en_travaillant=="Oui"], na.rm=TRUE),
+                  mean(dff$anxiete[dff$ecoute_en_travaillant=="Oui"], na.rm=TRUE)),
+  Moyenne_Non = c(mean(dff$heures_ecoute_par_jour[dff$ecoute_en_travaillant=="Non"], na.rm=TRUE),
+                  mean(dff$anxiete[dff$ecoute_en_travaillant=="Non"], na.rm=TRUE))
+)
+
+knitr::kable(res_t, digits = 4,
+             caption = "Figure 11 — Tests t (résumé)")
+```
+
+```{r}
+#| fig-width: 10
+#| fig-height: 5
+#| fig-align: center
+#| out-width: "85%"
+
+# ANNEXE — ANALYSE MULTIVARIÉE (ACP)
+
+par(cex = 0.6)
+
+library(FactoMineR)
+library(factoextra)
+library(dplyr)
+library(kableExtra)
+
+# Figure 13 — Tests préalables (normalité + déterminant)
+
+vars_quant <- c("heures_ecoute_par_jour",
+                "age",
+                "anxiete",
+                "depression",
+                "insomnie",
+                "toc")
+
+df_quant <- dff[, vars_quant]
+
+shapiro_p <- sapply(df_quant, function(x) shapiro.test(x)$p.value)
+
+tab_shapiro <- data.frame(
+  Variable = names(shapiro_p),
+  p_value = shapiro_p
+)
+
+knitr::kable(tab_shapiro, digits = 6,
+             caption = "Figure 13a — Tests de normalité (Shapiro-Wilk)") %>%
+  kable_styling(font_size = 8, latex_options = "scale_down")
+
+mat_corr <- cor(df_quant,
+                method = "spearman",
+                use = "complete.obs")
+
+det_corr <- det(mat_corr)
+
+knitr::kable(data.frame(Determinant = det_corr),
+             caption = "Figure 13b — Déterminant de la matrice de corrélation (Spearman)") %>%
+  kable_styling(font_size = 8, latex_options = "scale_down")
+```
+
+
+```{r}
+#| fig-width: 10
+#| fig-height: 5
+#| fig-align: left
+#| out-width: "55%"
+# Figure 14 — Cercle des corrélations (Dim 3–4)
+
+fviz_pca_var(ACP1, axes = c(3,4),
+             col.var = "contrib",
+             repel = TRUE,
+             title = "Figure 14 — Cercle des corrélations (Dim 3–4)")
+```
+
+
+```{r}
+# Figure 15 — Projection des individus (avec habillage robuste)
+
+library(FactoMineR)
+library(factoextra)
+
+df_acp_sup <- dff[, c("log_heures","anxiete","depression","insomnie","toc",
+                     "ecoute_en_travaillant","effet_musique")]
+
+df_acp_sup$ecoute_en_travaillant <- as.factor(df_acp_sup$ecoute_en_travaillant)
+df_acp_sup$effet_musique <- as.factor(df_acp_sup$effet_musique)
+
+ACP1_sup <- PCA(df_acp_sup,
+                scale.unit = TRUE,
+                quali.sup = c(6,7),
+                graph = FALSE)
+
+fviz_pca_ind(ACP1_sup,
+             axes = c(1,2),
+             label = "none",
+             geom = "point",
+             alpha.ind = 0.6,
+             title = "Figure 15a — Projection des individus (Dim 1–2)")
+
+fviz_pca_ind(ACP1_sup,
+             axes = c(1,2),
+             habillage = "ecoute_en_travaillant",
+             addEllipses = TRUE,
+             ellipse.level = 0.95,
+             label = "none",
+             title = "Figure 15b — Individus selon écoute en travaillant")
+
+fviz_pca_ind(ACP1_sup,
+             axes = c(1,2),
+             habillage = "effet_musique",
+             addEllipses = TRUE,
+             ellipse.level = 0.95,
+             label = "none",
+             title = "Figure 15c — Individus selon effet perçu")
+
+# Figure 16 — Âge en variable supplémentaire
+
+df_acp_age <- dff[, c("log_heures",
+                      "anxiete",
+                      "depression",
+                      "insomnie",
+                      "toc",
+                      "age")]
+
+ACP2 <- PCA(df_acp_age,
+            scale.unit = TRUE,
+            quanti.sup = 6,
+            graph = FALSE)
+
+fviz_pca_var(ACP2,
+             axes = c(1,2),
+             repel = TRUE,
+             title = "Figure 16 — Cercle (Dim 1–2) avec âge en variable supplémentaire")
+
+
+# Figure 17 — Contributions des variables
+
+var_contrib <- as.data.frame(get_pca_var(ACP1)$contrib)
+var_cos2    <- as.data.frame(get_pca_var(ACP1)$cos2)
+
+knitr::kable(var_contrib, digits = 2,
+             caption = "Figure 17a — Contributions des variables (\\%)") %>%
+  kable_styling(font_size = 8, latex_options = "scale_down")
+
+knitr::kable(var_cos2, digits = 2,
+             caption = "Figure 17b — Qualité de représentation (cos²)") %>%
+  kable_styling(font_size = 8, latex_options = "scale_down")
+
+
+# Figure 18 — Profils atypiques (Dim 1)
+
+ind_coord <- as.data.frame(get_pca_ind(ACP1)$coord)
+ind_coord$id <- as.integer(rownames(ind_coord))
+
+top_dim1_pos <- ind_coord %>% arrange(desc(Dim.1)) %>% head(5)
+top_dim1_neg <- ind_coord %>% arrange(Dim.1) %>% head(5)
+
+knitr::kable(top_dim1_pos, digits = 2,
+             caption = "Figure 18a — 5 individus les plus élevés sur Dim 1") %>%
+  kable_styling(font_size = 8, latex_options = "scale_down")
+
+knitr::kable(top_dim1_neg, digits = 2,
+             caption = "Figure 18b — 5 individus les plus faibles sur Dim 1") %>%
+  kable_styling(font_size = 8, latex_options = "scale_down")
+
+
+# Figure 19 — ACP santé globale vs log_heures
+
+dff$sante_globale <- (dff$anxiete +
+                       dff$depression +
+                       dff$insomnie +
+                       dff$toc) / 4
+
+df_acp_sante <- dff[, c("log_heures", "sante_globale")]
+ACP3 <- PCA(df_acp_sante,
+            scale.unit = TRUE,
+            graph = FALSE)
+
+fviz_pca_var(ACP3,
+             repel = TRUE,
+             title = "Figure 19a — Cercle (log_heures vs\nsanté globale)")
+
+fviz_pca_ind(ACP3,
+             label = "none",
+             geom = "point",
+             alpha.ind = 0.6,
+             title = "Figure 19b — Individus (log_heures vs santé globale)")
+```
+
+
+
