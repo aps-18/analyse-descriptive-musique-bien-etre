@@ -1,6 +1,6 @@
 # Analyse descriptive — Préférences musicales et bien-être psychologique
 
-Projet réalisé dans le cadre du Master 1 Économétrie Appliquée à l'IAE Nantes, pour le cours d'Analyse descriptive des données.
+Projet réalisé dans le cadre du Master 1 Économétrie Appliquée à l'IAE Nantes, pour le cours d'Analyse descriptive des données par Camille Ait-Youcef.
 
 ## Objectif
 
