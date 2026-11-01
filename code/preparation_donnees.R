@@ -1,12 +1,11 @@
 # 0) Importation des données
 
 library(readr)
-df <- read.csv("/Users/ameliepires/Desktop/Documents/FAC/M1/S1/CM analyse de données et descriptive/projet/base.csv",
+df <- read.csv("data/raw/base.csv",
                sep = ",",
                header = TRUE,
                stringsAsFactors = FALSE,
                na.strings = c("", "NA"))
-setwd("/Users/ameliepires/Desktop/Documents/FAC/M1/S1/CM analyse de données et descriptive/projet")
 
 # 1) Nettoyage de la base de données
 
@@ -220,8 +219,8 @@ names(dff)
 
 # 1.11 Exportation
 
-write.csv(dff,"base_n.csv",row.names = FALSE)
-
+write.csv(dff, "data/processed/base_n.csv", row.names = FALSE)
+                        
 # 2) Statistiques descriptives
 
 # 2.1 Analyse univariée : variables qualitatives
