@@ -58,7 +58,7 @@ Et enfin, une analyse factorielle (ACP) afin de réduire les dimensions des donn
 
 ```{r}
 library(readr)
-dff <- read.csv("/Users/ameliepires/Desktop/Documents/FAC/M1/S1/CM analyse de données et descriptive/projet/base_n.csv",
+dff <- read.csv("data/processed/base_n.csv",
                sep = ",",
                header = TRUE,
                stringsAsFactors = FALSE,
