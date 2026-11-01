@@ -18,11 +18,13 @@ execute:
   message: false
 editor: visual
 ---
+
 \newpage
 
 # Introduction
 
 ## Objectif / Problématique
+
 Pour ce projet, j’ai choisi d’étudier le lien entre les préférences musicales et le bien-être psychologique. La musique occupe une place importante dans la vie quotidienne et peut avoir des effets différents selon les personnes car elle peut détendre, motiver, aider à se concentrer ou parfois accentuer certaines émotions.
 
 Je me suis donc demandé s'il existait une relation entre les habitudes d’écoute musicale et certains indicateurs de santé mentale comme l’anxiété, la dépression, l’insomnie ou les troubles obsessionnels compulsifs ?
@@ -36,7 +38,6 @@ La base de données utilisée provient du site Kaggle et correspond à l’enqu�
 Les données ont été collectées à partir d’une enquête en ligne portant sur les habitudes d’écoute musicale et différents indicateurs liés à la santé mentale. L’objectif de cette enquête était de mieux comprendre les liens possibles entre la musique et l’état émotionnel des individus.
 
 La base initiale comportait un nombre limité de valeurs manquantes (environ 2,6 % des données). Afin de conserver l’ensemble des observations, les valeurs manquantes ont été imputées à l’aide de la méthode MICE. Cette méthode permet d’estimer les valeurs manquantes en tenant compte des relations entre les variables. En revanche, la variable liée au BPM a été supprimée car elle présentait un nombre important de valeurs manquantes et de valeurs aberrantes (environ 14,5 %), ce qui ne permettait pas une exploitation fiable, de plus cela ne rajoutait pas beaucoup d'explication à notre problématique.
-
 
 ## Description des variables
 
@@ -58,7 +59,7 @@ Et enfin, une analyse factorielle (ACP) afin de réduire les dimensions des donn
 
 ```{r}
 library(readr)
-dff <- read.csv("data/processed/base_n.csv",
+dff <- read.csv("../data/processed/base_n.csv",
                sep = ",",
                header = TRUE,
                stringsAsFactors = FALSE,
@@ -66,6 +67,7 @@ dff <- read.csv("data/processed/base_n.csv",
 ```
 
 \newpage
+
 # Analyse statistique univariée
 
 L’objectif de cette partie est de décrire individuellement chaque variable du jeu de données. Cette étape permet de mieux comprendre la structure des données avant d’étudier les relations entre les variables.
@@ -110,7 +112,6 @@ Il est important de préciser que ces scores sont auto-déclarés par les répon
 
 Ces premiers résultats montrent que l’échantillon présente une diversité importante des niveaux de santé mentale, ce qui justifie l’étude des relations avec les pratiques musicales dans la suite de l’analyse.
 
-
 ### Temps d’écoute quotidien
 
 Le temps d’écoute quotidien présente une médiane de 3 heures et une moyenne de 3,57 heures (statistiques descriptives en Annexe Figure 6).
@@ -153,7 +154,6 @@ Les préférences apparaissent très diversifiées. Le rock domine (25,5 %), sui
 
 Cette hétérogénéité des préférences musicales suggère l’existence de profils variés qu'on pourrait associer différemment aux indicateurs de santé mentale.
 
-
 ```{r}
 #| fig-width: 10
 #| fig-height: 5
@@ -167,13 +167,11 @@ barplot(tab_genre, las = 2,
         ylab = "Effectifs")
 ```
 
-
 ### Effet perçu de la musique
 
 La majorité des individus (74,5 %) déclarent que la musique améliore leur état émotionnel. Une part plus faible estime qu’elle n’a pas d’effet particulier et une très faible part considère qu’elle peut aggraver leur état (voir Annexe, Figure 2).
 
 Ce résultat souligne le rôle central de la musique dans la régulation des émotions au sein de notre échantillon, en partie positif.
-
 
 ### Écoute en travaillant
 
@@ -201,7 +199,6 @@ L’analyse bivariée permet d’étudier les relations entre deux variables afi
 
 Les relations étudiées que j'ai sélectionné sont en lien avec la problématique « musique et bien-être psychologique ». Trois "types d’associations" sont étudiés : les relations de variables quantitative–quantitative, les relations qualitative–qualitative et les relations quantitative–qualitative.
 
-
 ## Analyse quantitative vs quantitative
 
 ### Temps d’écoute quotidien et anxiété
@@ -213,7 +210,6 @@ Les résultats détaillés du test sont présentés en annexe (voir Annexe, Figu
 Le nuage de points confirme cette interprétation (voir Annexe, Figure 9a). Les observations sont largement dispersées et ne dessinent pas de tendance linéaire marquée. La variabilité des scores d’anxiété reste importante pour des niveaux similaires d’écoute ce qui suggère que le temps d’écoute n’est pas un facteur fortement structurant du niveau d’anxiété.
 
 Alors même si une association statistique est détectée, son pouvoir explicatif reste faible.
-
 
 ### Corrélations globales entre variables quantitatives
 
@@ -275,9 +271,9 @@ barplot(tab_travail_effet,
         ylab = "Effectifs")
 ```
 
-Le graphique montre que les individus écoutant de la musique en travaillant déclarent plus fréquemment un effet positif. À l’inverse, ceux ne le faisant pas déclarent plus souvent un effet neutre. 
+Le graphique montre que les individus écoutant de la musique en travaillant déclarent plus fréquemment un effet positif. À l’inverse, ceux ne le faisant pas déclarent plus souvent un effet neutre.
 
-Le test du χ² correspondant est présenté en annexe (voir Annexe, Figure 7). La relation entre l’écoute de musique en travaillant et l’effet perçu de la musique est statistiquement significative (χ² = 21,64, ddl = 2 et p < 0,001).
+Le test du χ² correspondant est présenté en annexe (voir Annexe, Figure 7). La relation entre l’écoute de musique en travaillant et l’effet perçu de la musique est statistiquement significative (χ² = 21,64, ddl = 2 et p \< 0,001).
 
 Cela signifie que la perception de l’effet de la musique diffère selon que l’individu écoute ou non de la musique en travaillant. L’usage de la musique dans un contexte de travail semble donc associé à une expérience émotionnelle spécifique. Ça suggère que la musique est utilisée de manière fonctionnelle dans les activités quotidiennes.
 
@@ -324,6 +320,7 @@ Le test t confirme que cette différence est statistiquement significative. Les 
 L’analyse bivariée met en évidence certaines associations entre pratiques musicales et indicateurs de santé mentale. Les troubles psychologiques sont corrélés entre eux de manière modérée, tandis que le lien entre intensité d’écoute et santé mentale reste faible. L’écoute en travaillant apparaît associée à une perception plus positive de la musique ainsi qu’à une intensité d’écoute plus élevée. Toutefois, ces résultats décrivent des associations et ne permettent pas d’établir de relation causale.
 
 \newpage
+
 # Analyse multivariée
 
 L’analyse multivariée vise à comprendre comment s’organisent simultanément les différentes dimensions étudiées au-delà des relations bivariées. Alors que les analyses précédentes ont permis d’identifier des corrélations entre variables prises deux à deux, elles ne permettent pas d’appréhender la structure globale du système. L’objectif ici est donc d’examiner si les indicateurs de santé mentale et les pratiques d’écoute musicale s’inscrivent dans une même dimension ou s’ils relèvent de logiques distinctes. Pour répondre à cette question j'ai effectué une Analyse en Composantes Principales (ACP). Cette méthode permet de résumer l’information contenue dans plusieurs variables quantitatives corrélées en un nombre réduit d’axes factoriels, tout en conservant une part importante de la variance initiale. Elle offre ainsi une lecture synthétique de la structure des données et permet d’identifier les dimensions dominantes qui organisent l’espace des individus.
@@ -331,7 +328,6 @@ L’analyse multivariée vise à comprendre comment s’organisent simultanémen
 ## Analyse en composantes principales (ACP)
 
 L’ACP constitue une méthode exploratoire de réduction de dimension particulièrement adaptée lorsque l’on cherche à mettre en évidence des facteurs latents communs à plusieurs variables quantitatives. Dans cette étude, elle permet d’examiner si un facteur global de santé mentale émerge des différents indicateurs psychologiques et de déterminer comment l’intensité d’écoute musicale se positionne par rapport à cette structure. L’analyse repose sur des variables centrées et réduites afin d’assurer leur comparabilité, les scores étant exprimés sur des échelles identiques mais présentant des dispersions différentes. L’ACP fournit ainsi une représentation factorielle des variables et des individus, permettant une interprétation simultanée des relations entre dimensions psychologiques et comportements musicaux.
-
 
 ### Choix des variables
 
@@ -413,6 +409,7 @@ knitr::kable(tab_axes, digits = 2,
                 latex_options = "scale_down",
                 position = "left")
 ```
+
 L’analyse des contributions permet d’identifier quelles variables « construisent » réellement l’axe. Sur la première dimension, les contributions les plus élevées sont celles de l’anxiété (29 %), de la dépression (28 %), de l’insomnie (21 %) et des TOC (16 %), tandis que la contribution de log_heures reste moindre (5 %). Cela signifie que la première dimension est très majoritairement structurée par les indicateurs de santé mentale, qui concentrent à eux seuls l’essentiel de l’inertie de l’axe. Cette lecture confirme visuellement ce que suggérait déjà le cercle des corrélations, la Dimension 1 correspond à un facteur commun de troubles psychiques.
 
 L’examen des cos² complète cette interprétation. Les valeurs élevées de cos² pour l’anxiété et la dépression sur Dim 1 (environ 0,60) indiquent que ces variables sont très bien représentées sur cet axe, c’est-à-dire qu’une part importante de leur variance est expliquée par cette dimension. L’insomnie et les TOC présentent également des cos² importants, confirmant leur forte association à cette dimension. À l’inverse, log_heures présente un cos² faible sur Dim 1 (0,10), ce qui signifie qu’elle est peu expliquée par cet axe.
@@ -436,6 +433,7 @@ Afin de tester plus directement l’existence d’une dimension commune entre mu
 Dans l’ensemble, l’ACP met en évidence une structure claire et stable. La dimension principale est celle de la santé mentale globale, tandis que l’intensité d’écoute musicale constitue une dimension secondaire relativement indépendante. Ces résultats prolongent et confirment ceux de l’analyse bivariée, la musique n’apparaît pas comme un facteur explicatif central des troubles psychiques, mais s’inscrit dans un système plus complexe où la variabilité des troubles constitue l’élément structurant majeur de l’espace des individus.
 
 \newpage
+
 # Conclusion
 
 ## Principaux résultats
@@ -485,6 +483,7 @@ En définitive, ce travail montre que la musique occupe une place importante dan
 \newpage
 
 # Annexes
+
 ```{r}
 #| fig-width: 10
 #| fig-height: 5
@@ -732,7 +731,6 @@ knitr::kable(data.frame(Determinant = det_corr),
   kable_styling(font_size = 8, latex_options = "scale_down")
 ```
 
-
 ```{r}
 #| fig-width: 10
 #| fig-height: 5
@@ -745,7 +743,6 @@ fviz_pca_var(ACP1, axes = c(3,4),
              repel = TRUE,
              title = "Figure 14 — Cercle des corrélations (Dim 3–4)")
 ```
-
 
 ```{r}
 # Figure 15 — Projection des individus (avec habillage robuste)
@@ -860,6 +857,3 @@ fviz_pca_ind(ACP3,
              alpha.ind = 0.6,
              title = "Figure 19b — Individus (log_heures vs santé globale)")
 ```
-
-
-
